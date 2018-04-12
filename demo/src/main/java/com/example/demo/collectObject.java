@@ -1,5 +1,7 @@
 package com.example.demo;
 
+import java.util.ArrayList;
+
 public class collectObject {
 
     private long id;
@@ -8,6 +10,8 @@ public class collectObject {
     private String createdBy;
     private String modified;
     private String modifiedBy;
+    
+    private ArrayList<assetObject> assetList = new ArrayList<assetObject>();
     
     public collectObject() {
 		super();
@@ -87,6 +91,21 @@ public class collectObject {
 
 	public String getModifiedBy() {
 		return modifiedBy;
+	}
+
+
+	public ArrayList<assetObject> getAssetList() {
+		return assetList;
+	}
+
+
+	public void setAssetList(ArrayList<assetObject> assetList) {
+		this.assetList = assetList;
+	}
+
+
+	public String getName() {
+		return name;
 	}
     
     

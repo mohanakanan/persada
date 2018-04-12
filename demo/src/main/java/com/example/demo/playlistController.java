@@ -6,7 +6,6 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,17 +16,7 @@ import net.minidev.json.parser.JSONParser;
 @RestController
 public class playlistController {
 
-//    private static final String template = "Hello, %s!";
-//    private final AtomicLong counter = new AtomicLong();
 
-//    @RequestMapping("/greeting")
-//    public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) {
-//        return new Greeting(counter.incrementAndGet(),
-//                            String.format(template, name));
-//    }
-    
-    //https://xcite-dev.spreeo.com/xcite/api/v1.0/admin/pages/{pageId}/
-	
 	 private String inline;
 
 	@RequestMapping("/createplaylist")
@@ -56,13 +45,17 @@ public class playlistController {
 	    }
 	    
 	    @RequestMapping("/updateplaylist")
-	    public boolean updatePlaylist(long playlistId) {
+	    public boolean updatePlaylist(long playlistId, collectObject singleCollection, ArrayList<assetObject> multipleAsset) {
 	    	
 	    	boolean flag = false;
 	    	playlistObject playlist = getPlaylist(playlistId);
 	    	
 	    	if (playlist != null) {
+	    		
 	    		//update playlist
+	    		collectObject updatedCollection = addAssetToCollection(singleCollection.getId(), multipleAsset);
+	    		 
+	    		playlist.setSingleCollection(updatedCollection);
 	    		flag = true;
 	    	} 
 	    	
@@ -94,11 +87,8 @@ public class playlistController {
 			URL url;
 			
 			 try {
-				if (collectionId != 0) {
-					url = new URL(" https://xcite-dev.spreeo.com/xcite/api/v1.0/collections/{" + collectionId + " }"); 
-				} else {
-					url = new URL("https://xcite-dev.spreeo.com/xcite/api/v1.0/collections/"); 
-				}
+				url = new URL(" https://xcite-dev.spreeo.com/xcite/api/v1.0/collections/{" + collectionId + " }"); 
+
 				
 				Scanner sc = new Scanner(url.openStream());
 			 	HttpURLConnection conn = (HttpURLConnection)url.openConnection(); 
@@ -134,6 +124,18 @@ public class playlistController {
 	    	
 	    	
 	    }
+	    
+	    @RequestMapping("/addassets")
+	    public collectObject addAssetToCollection(long collectionId, ArrayList<assetObject> multipleAsset) {
+
+	    	collectObject collectObj = getCollection(collectionId);
+	    	collectObj.setAssetList(multipleAsset);
+
+	    	return collectObj;
+	    	
+	    	
+	    }
+	    
 	    
 	    @RequestMapping("/getassets")
 	    public ArrayList<assetObject> getAssetFromCollection(long collectionId) {
@@ -186,12 +188,19 @@ public class playlistController {
 	    }
 	    
 	    @RequestMapping("/removeasset")
-	    public ArrayList<pageObject> removeAssetFromPlaylist() {
+	    public boolean removeAssetFromPlaylist(long assetId, long collectionId, long playlistId) {
+	    	boolean flag = false;
+	    	playlistObject playObj = getPlaylist(playlistId);
 	    	
-	    	ArrayList<playlistObject> playlist = new ArrayList<playlistObject>();
-	    	playlist.get(0).getPageList()
+	    	ArrayList<assetObject> assetList = getAssetFromCollection(playObj.getSingleCollection().getId());
 	    	
-	    	
+	    			for (assetObject temp : assetList) {
+	    				if(temp.getId() == assetId) {
+	    					flag = assetList.remove(temp);
+	    				}
+	    			}
+
+	    			return flag;
 	    }
 	    
 	    @RequestMapping("/getpage")
@@ -230,30 +239,34 @@ public class playlistController {
 	    }
 	    
 	    @RequestMapping("/removepage")
-	    public ArrayList<pageObject> removePageFromPlaylist() {
+	    public boolean removePageFromPlaylist(long pageId, long playlistId) {
 	    	
-	    	ArrayList<playlistObject> playlist = new ArrayList<playlistObject>();
-	    	playlist.get(0).getPageList()
+	    	boolean flag = false;
+	    	playlistObject playObj = getPlaylist(playlistId);
+
+	    	ArrayList<pageObject> pageList = getPagesFromPlaylist(pageId, playObj);
+	    	
+	    			for (pageObject temp : pageList) {
+	    				if(temp.getId() == pageId) {
+	    					flag = pageList.remove(temp);
+	    				}
+	    			}
+
+	    			return flag;
 	    	
 	    	
 	    }
 	    
 	    
-//    @RequestMapping("/pages")
-//    public ArrayList<pageObject> getPageList() {
-//    	
-//    	ArrayList<playlistObject> playlist = new ArrayList<playlistObject>();
-//    	playlist.get(0).getPageList()
-//    	
-//    	
-//    }
-//    
-//    @RequestMapping("/pages/{pageId}")
-//    public pageObject getPage(@RequestParam(value="pageId", defaultValue="5acda19da168f92188f7b8c8") String pageId) {
-//        return new pageObject(pageId);
-//    }
-//    
-    
+	    @RequestMapping("/getpages")
+	    public ArrayList<pageObject> getPagesFromPlaylist(long pageId, playlistObject playObj ) {
+	    		    	
+	    	ArrayList<pageObject>  multiplePages =  playObj.getPageList();
+	    	
+	    	return multiplePages;
+			    	
+	    	
+	    }
     
 
 }
